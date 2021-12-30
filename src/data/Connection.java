@@ -39,6 +39,10 @@ public class Connection {
     public void setColor(Color color) {
         this.color = color;
     }
+    /**Metoda zwracająca kolor połączenia*/
+    public Color getColor() {
+        return color;
+    }
     /** Metoda zwracająca pierwszy węzeł grafu*/
     public Node getNode1(){
         return node1;

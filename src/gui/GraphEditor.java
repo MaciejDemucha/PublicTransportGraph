@@ -11,16 +11,14 @@
 
 package gui;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.ArrayList;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
+import java.util.concurrent.TimeUnit;
+import javax.swing.*;
 
 import data.Connection;
 import data.Graph;
@@ -32,6 +30,8 @@ public class GraphEditor extends JFrame implements ActionListener {
 
     private static final long serialVersionUID = 1L;
     int i = 0;
+
+    Timer timer;
 
     private static final String APP_AUTHOR = "Autor: Maciej Demucha\n  Data: grudzień 2021";
     private static final String APP_TITLE = "Komunikacja miejska";
@@ -61,14 +61,15 @@ public class GraphEditor extends JFrame implements ActionListener {
                     "gdy kursor wskazuje krawędź:\n" +
                     "PPM ==> usunięcie połączenia\n\n" +
                     "Opcje menu:\n" +
-                    "New Line: Utworzenie nowej linii komunikacji\n" +
-                    "Next Line: Przeglądanie i edycja poszczególnych linii\n" +
-                    "All lines: Wyświetlenie wszystkich linii jednocześnie (nie należy edytować linii w tym widoku)\n" +
-                    "List of nodes: Wyświetlenie listy przystanków\n" +
-                    "List of connections: Wyświetlenie listy połączeń\n" +
-                    "List of lines: Wyświetlenie listy linii komunikacji\n" +
-                    "Load from file: Odczyt grafów z pliku binarnego\n" +
-                    "Save to file: Zapis grafów do pliku binarnego\n";
+                    "Nowa linia: Utworzenie nowej linii komunikacji\n" +
+                    "Następna linia: Przeglądanie i edycja poszczególnych linii\n" +
+                    "Wszystkie linie: Wyświetlenie wszystkich linii jednocześnie (nie należy edytować linii w tym widoku)\n" +
+                    "Wyodrębnij wybraną linię: Koloruje wybrana linię" +
+                    "Lista przystanków: Wyświetlenie listy przystanków\n" +
+                    "Lista połączeń: Wyświetlenie listy połączeń\n" +
+                    "Lista linii: Wyświetlenie listy linii komunikacji\n" +
+                    "Wczytaj z pliku: Odczyt grafów z pliku binarnego\n" +
+                    "Zapisz do pliku: Zapis grafów do pliku binarnego\n";
 
 
     public static void main(String[] args) {
@@ -76,21 +77,21 @@ public class GraphEditor extends JFrame implements ActionListener {
     }
 
 
-    // private GraphBase graph;
     private JMenuBar menuBar = new JMenuBar();
-    private JMenu menuGraph = new JMenu("Graph");
-    private JMenu menuHelp = new JMenu("Help");
-    private JMenuItem menuNew = new JMenuItem("New Line", KeyEvent.VK_N);
-    private JMenuItem menuNext = new JMenuItem("Next line");
-    private JMenuItem menuAllLines = new JMenuItem("All lines", KeyEvent.VK_X);
-    private JMenuItem menuExit = new JMenuItem("Exit", KeyEvent.VK_E);
-    private JMenuItem menuListOfNodes = new JMenuItem("List of Nodes", KeyEvent.VK_N);
-    private JMenuItem menuListOfConnections = new JMenuItem("List of Connections", KeyEvent.VK_N);
-    private JMenuItem menuListOfLines = new JMenuItem("List of Lines", KeyEvent.VK_N);
-    private JMenuItem menuLoadFromFile = new JMenuItem("Load from file");
-    private JMenuItem menuSaveToFile = new JMenuItem("Save to file");
-    private JMenuItem menuAuthor = new JMenuItem("Author", KeyEvent.VK_A);
-    private JMenuItem menuInstruction = new JMenuItem("Instruction", KeyEvent.VK_I);
+    private JMenu menuGraph = new JMenu("Graf");
+    private JMenu menuHelp = new JMenu("Pomoc");
+    private JMenuItem menuNew = new JMenuItem("Nowa linia", KeyEvent.VK_N);
+    private JMenuItem menuNext = new JMenuItem("Następna linia");
+    private JMenuItem menuAllLines = new JMenuItem("Wszystkie linie", KeyEvent.VK_X);
+    private JMenuItem menuColorLine = new JMenuItem("Wyodrębnij wybraną linię", KeyEvent.VK_X);
+    private JMenuItem menuExit = new JMenuItem("Wyjście", KeyEvent.VK_E);
+    private JMenuItem menuListOfNodes = new JMenuItem("Lista przystanków", KeyEvent.VK_N);
+    private JMenuItem menuListOfConnections = new JMenuItem("Lista połączeń", KeyEvent.VK_N);
+    private JMenuItem menuListOfLines = new JMenuItem("Lista linii", KeyEvent.VK_N);
+    private JMenuItem menuLoadFromFile = new JMenuItem("Wczytaj z pliku");
+    private JMenuItem menuSaveToFile = new JMenuItem("Zapisz do pliku");
+    private JMenuItem menuAuthor = new JMenuItem("Autor", KeyEvent.VK_A);
+    private JMenuItem menuInstruction = new JMenuItem("Instrukcja", KeyEvent.VK_I);
 
     private GraphPanel panel = new GraphPanel();
 
@@ -142,11 +143,11 @@ public class GraphEditor extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(this, message, APP_TITLE + " - Lista linii", JOptionPane.PLAIN_MESSAGE);
     }
 
-
     private void createMenu() {
         menuNew.addActionListener(this);
         menuNext.addActionListener(this);
         menuAllLines.addActionListener(this);
+        menuColorLine.addActionListener(this);
         menuExit.addActionListener(this);
         menuListOfNodes.addActionListener(this);
         menuListOfConnections.addActionListener(this);
@@ -160,6 +161,7 @@ public class GraphEditor extends JFrame implements ActionListener {
         menuGraph.add(menuNew);
         menuGraph.add(menuNext);
         menuGraph.add(menuAllLines);
+        menuGraph.add(menuColorLine);
         menuGraph.addSeparator();
         menuGraph.add(menuListOfNodes);
         menuGraph.add(menuListOfConnections);
@@ -183,6 +185,8 @@ public class GraphEditor extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
+        menuGraph.remove(menuColorLine);
+
         if (source == menuNew) {
             try{
                 String numberString = JOptionPane.showInputDialog("Enter line number");
@@ -201,7 +205,7 @@ public class GraphEditor extends JFrame implements ActionListener {
 
             }
             catch (NumberFormatException e){
-                JOptionPane.showMessageDialog(this, "You need to enter an int number!");
+                JOptionPane.showMessageDialog(this, "Musisz wprowadzić liczbę calkowitą!");
                 return;
             }
         }
@@ -217,7 +221,35 @@ public class GraphEditor extends JFrame implements ActionListener {
         }
         if (source == menuAllLines) {
             panel.setGraphs(panel.getGraphs());
+            menuGraph.add(menuColorLine);
             repaint();
+        }
+        if (source == menuColorLine) {
+            try {
+                Graph graphToColor = (Graph) JOptionPane.showInputDialog(null,
+                        "Wybierz linię:",
+                        "Wybierz linię", JOptionPane.QUESTION_MESSAGE,
+                        null, panel.getGraphsArray(), panel.getGraphsArray()[0]);
+
+                Color previousColor = null;
+
+                if(graphToColor.getTransportType().equals(TransportType.TRAM)){
+                    previousColor = Color.BLUE;
+                }
+                else if (graphToColor.getTransportType().equals(TransportType.BUS)){
+                    previousColor = Color.RED;
+                }
+
+                JOptionPane.showMessageDialog(this, "Wyodrębniono wybrana linię.");
+                graphToColor.colorConnections(Color.green);
+                TimeUnit.SECONDS.sleep(5);
+                graphToColor.colorConnections(previousColor);
+                menuGraph.add(menuColorLine);
+                repaint();
+            }
+            catch (NullPointerException | InterruptedException e){
+                return;
+            }
         }
         if (source == menuListOfNodes) {
             showListOfNodes(panel.getGraph());
@@ -251,6 +283,9 @@ public class GraphEditor extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this, APP_INSTRUCTION, APP_TITLE, JOptionPane.PLAIN_MESSAGE);
         }
         if (source == menuExit) {
+            System.exit(0);
+        }
+        if (source == timer) {
             System.exit(0);
         }
     }

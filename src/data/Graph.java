@@ -64,7 +64,7 @@ public class Graph implements Serializable {
         this.nodes = new HashSet<>();
         this.connections = new ArrayList<>();
     }
-    /**Metoda dodająca przystanek w postaci węzła do grafu linii*/
+    /**Metoda dodająca przystanek w postaci węzła do listy węzłów grafu*/
     public void addNode(Node node){
         nodes.add(node);
     }
@@ -77,7 +77,7 @@ public class Graph implements Serializable {
         Node [] array = new Node[0];
         return nodes.toArray(array);
     }
-    /**Metoda dodająca połączenie między przystankami do listy i ustawiająca odpowiedni kolor:
+    /**Metoda dodająca połączenie między przystankami do listy połączeń grafu i ustawiająca odpowiedni kolor:
      * <ul>
      *     <li>Czerwony: Bus</li>
      *     <li>Niebieski: Tramwaj</li>
@@ -94,9 +94,15 @@ public class Graph implements Serializable {
             connection.setColor(Color.BLACK);
         }
     }
-    /**Metoda dodająca połączenie między przystankami do listy*/
+    /**Metoda dodająca połączenie między przystankami do listy połączeń grafu*/
     public void addConnection(Connection connection){
         connections.add(connection);
+    }
+    /**Metoda kolorująca wszystkie połączenia w grafie*/
+    public void colorConnections(Color color){
+        for (Connection connection : connections) {
+            connection.setColor(color);
+        }
     }
     /**Metoda usuwająca połączenie między przystankami z listy*/
     public void removeConnection(Connection connection){
@@ -112,6 +118,11 @@ public class Graph implements Serializable {
         Connection [] array = new Connection[0];
         return connections.toArray(array);
     }
+    /**Metoda zwracająca rodzaj transportu linii*/
+    public TransportType getTransportType() {
+        return transportType;
+    }
+
     /**Przedefiniowana metoda toString zwracająca numer linii i rodzaj transportu*/
     @Override
     public String toString(){

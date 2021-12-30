@@ -107,6 +107,11 @@ public class GraphPanel extends JPanel
        return graphs;
     }
 
+    public Graph[] getGraphsArray(){
+        Graph[] graphArray = new Graph[graphs.size()];
+       return graphs.toArray(graphArray);
+    }
+
     private Node findNode(int mx, int my){
         for(Node node: graph.getNodes()){
             if (node.isMouseOver(mx, my)){
